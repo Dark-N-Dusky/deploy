@@ -16,9 +16,12 @@ services:
     ports:
       - 80:80
       - 443:443
+      - 8081:8080
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       # - "traefik-certificates:/letsencrypt"
+    networks:
+      - dz-network
 
   frontend:
     image: bryanchristy/dz-international-frontend:latest-prod
@@ -29,6 +32,7 @@ services:
       - "traefik.http.routers.frontend.entrypoints=websecure"
       # - "traefik.http.routers.frontend.tls.certresolver=le"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      # - "traefik.http.routers.frontend.rule=Host(`domain.com`)"
       - "traefik.http.routers.frontend.rule=Host(`192.168.1.15`) || Host(`localhost`)"
     ports:
       - "3000:3000"
@@ -40,6 +44,13 @@ services:
     image: bryanchristy/dz-international-backend:latest-prod
     env_file:
       - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      # - "traefik.http.routers.frontend.tls.certresolver=le"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3200"
+      # - "traefik.http.routers.frontend.rule=Host(`api.domain.com`)"
+      - "traefik.http.routers.frontend.rule=Host(`192.168.1.15/api`) || Host(`localhost`)"
     ports:
       - "3200:3200"
     depends_on:
