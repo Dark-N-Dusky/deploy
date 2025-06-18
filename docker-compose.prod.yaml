@@ -1,0 +1,22 @@
+services:
+  traefik:
+    command:
+      - "--certificatesresolvers.cf.acme.dnschallenge=true"
+      - "--certificatesresolvers.cf.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.cf.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.cf.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.cf.acme.dnschallenge.delaybeforecheck=0"
+      - "--certificatesresolvers.cf.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+    environment:
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
+
+  frontend:
+    labels:
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.tls.certresolver=cf"
+
+  backend:
+    labels:
+      - "traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.backend.tls.certresolver=cf"

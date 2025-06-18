@@ -6,34 +6,27 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--providers.docker=true"
       - "--api.dashboard=true"
-      # - "--certificatesresolvers.le.acme.httpchallenge=true"
-      # - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
-      # - "--certificatesresolvers.le.acme.email=bryanchristy2016@gmail.com"
-      # - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
       - "--entrypoints.websecure.http.tls=true"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
     ports:
-      - 80:80
-      - 443:443
-      - 8081:8080
+      - "80:80"
+      - "443:443"
+      - "8081:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      # - "traefik-certificates:/letsencrypt"
+      - "traefik-certificates:/letsencrypt"
     networks:
       - dz-network
 
   frontend:
-    image: bryanchristy/dz-international-frontend:latest-prod
+    image: ghcr.io/dark-n-dusky/dz-international-frontend:${FRONTEND_TAG}
     env_file:
       - .env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.entrypoints=websecure"
-      # - "traefik.http.routers.frontend.tls.certresolver=le"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-      # - "traefik.http.routers.frontend.rule=Host(`domain.com`)"
-      - "traefik.http.routers.frontend.rule=Host(`192.168.1.15`) && PathPrefix(`/`)"
     ports:
       - "3000:3000"
     restart: unless-stopped
@@ -41,18 +34,13 @@ services:
       - dz-network
 
   backend:
-    image: bryanchristy/dz-international-backend:latest-prod
+    image: ghcr.io/dark-n-dusky/dz-international-backend:${BACKEND_TAG}
     env_file:
       - .env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.entrypoints=websecure"
-      # - "traefik.http.routers.backend.tls.certresolver=le"
       - "traefik.http.services.backend.loadbalancer.server.port=3200"
-      # - "traefik.http.routers.backend.rule=Host(`api.domain.com`)"
-      - "traefik.http.routers.backend.rule=Host(`192.168.1.15`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.middlewares=backend-stripprefix"
-      - "traefik.http.middlewares.backend-stripprefix.stripprefix.prefixes=/api"
     ports:
       - "3200:3200"
     depends_on:
@@ -91,14 +79,14 @@ services:
     image: adminer
     restart: always
     ports:
-      - 8085:8080
+      - "8085:8080"
     networks:
       - dz-network
 
 volumes:
   pgdata:
   mongodata:
-  # traefik-certificates:
+  traefik-certificates:
 
 networks:
   dz-network:
