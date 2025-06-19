@@ -1,6 +1,13 @@
 services:
   traefik:
     command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--api.dashboard=true"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.http.tls=true"
       - "--certificatesresolvers.cf.acme.dnschallenge=true"
       - "--certificatesresolvers.cf.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.cf.acme.email=${ACME_EMAIL}"
@@ -14,9 +21,11 @@ services:
   frontend:
     labels:
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=cf"
 
   backend:
     labels:
       - "traefik.http.routers.backend.rule=Host(`api.${DOMAIN}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=cf"

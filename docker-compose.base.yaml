@@ -6,9 +6,9 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--providers.docker=true"
       - "--api.dashboard=true"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.http.tls=true"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
     ports:
       - "80:80"
       - "443:443"
@@ -25,7 +25,6 @@ services:
       - .env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     ports:
       - "3000:3000"
@@ -39,7 +38,6 @@ services:
       - .env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.services.backend.loadbalancer.server.port=3200"
     ports:
       - "3200:3200"
@@ -62,8 +60,6 @@ services:
       POSTGRES_DB: d_z_international
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      # - "5432:5432"
     networks:
       - dz-network
 
@@ -72,8 +68,6 @@ services:
     restart: always
     volumes:
       - mongodata:/data/db
-    ports:
-      # - "27017:27017"
     networks:
       - dz-network
 
@@ -82,6 +76,23 @@ services:
     restart: always
     ports:
       - "8085:8080"
+    networks:
+      - dz-network
+
+  status-printer:
+    image: curlimages/curl:latest
+    depends_on:
+      - traefik
+      - frontend
+      - backend
+    entrypoint: >
+      sh -c "
+        echo '🔄 Waiting for frontend...';
+        until curl -sf http://frontend:3000 > /dev/null; do sleep 1; done;
+        echo '🔄 Waiting for backend...';
+        until curl -sf http://backend:3200 > /dev/null; do sleep 1; done;
+        echo '✅ Server is ready at http://localhost';
+      "
     networks:
       - dz-network
 
