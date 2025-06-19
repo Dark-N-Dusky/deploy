@@ -43,6 +43,8 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=3200"
     ports:
       - "3200:3200"
+      - "2525:2525"
+      - "587:587"
     depends_on:
       - postgres
       - mongo
@@ -61,7 +63,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      # - "5432:5432"
     networks:
       - dz-network
 
@@ -71,7 +73,7 @@ services:
     volumes:
       - mongodata:/data/db
     ports:
-      - "27017:27017"
+      # - "27017:27017"
     networks:
       - dz-network
 
