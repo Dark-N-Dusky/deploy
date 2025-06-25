@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: dzinternational
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      name: backend
+      labels:
+        editor: vscode
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/dark-n-dusky/dz-international-backend:latest-prod
+          resources:
+            requests:
+              cpu: 100m
+              memory: 20Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
+          env:
+            - name: BACKEND_PORT
+              value: "3200"
+            - name: JWT_SECRET
+              value: ""
+            - name: MONGO_URI
+              value: ""
+            - name: DB_HOST
+              value: ""
+            - name: DB_PORT
+              value: ""
+            - name: DB_USERNAME
+              value: ""
+            - name: DB_PASSWORD
+              value: ""
+            - name: DB_DATABASE
+              value: ""
+            - name: DB_SSL
+              value: "false"
+            - name: SWAGGER_PASSWORD
+              value: ""
+            - name: EMAIL_HOST
+              value: ""
+            - name: EMAIL_PORT
+              value: "2525"
+            - name: EMAIL_USER
+              value: ""
+            - name: EMAIL_PASS
+              value: ""
+            - name: CLOUDINARY_CLOUD_NAME
+              value: ""
+            - name: CLOUDINARY_API_KEY
+              value: ""
+            - name: CLOUDINARY_API_SECRET
+              value: ""
